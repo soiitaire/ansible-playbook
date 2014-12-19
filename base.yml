@@ -1,0 +1,23 @@
+---
+- name: Install base need.
+  hosts: all
+  sudo: True
+
+  tasks:
+    - shell: locale-gen zh_CN.UTF-8
+    - shell: dpkg-reconfigure --frontend noninteractive locales
+    - apt: update_cache=yes
+    - name: Install package
+      apt: pkg={{ item }} state=latest
+      with_items:
+        - build-essential
+        - htop
+        - tree
+        - silversearcher-ag
+        - zsh
+        - git
+        - git-core
+        - axel
+        - nodejs-legacy
+        - npm
+        - lynx

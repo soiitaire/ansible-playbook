@@ -1,0 +1,32 @@
+---
+- name: Create deploy user
+  remote_user: root
+  hosts: all
+  sudo: True
+  vars:
+    name: deploy
+    # created with:
+    # python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+    password: $6$rounds=100000$MuDJrMd8yKLrst5b$26zIiCdg7mIAj1al.PEHDr3v81PEf11QqfxLfprr8YO0T/xnb.kZ8lGceif03nHpDha8fEgXx4Ola/yLOAO5.0
+  tasks:
+  - user:
+      name={{ name }}
+      shell=/usr/bin/zsh
+      ssh_key_file=$HOME/.ssh/server.pub password={{ password }}
+      groups=www-data,sudo
+      append=yes
+  - authorized_key:
+      user=deploy
+      key="{{ lookup('file', '~/.ssh/server.pub') }}"
+
+- name: Install oh-my-zsh
+  remote_user: deploy
+  hosts: all
+  vars:
+    name: deploy
+  tasks:
+  - name: Clone oh-my-zsh repo
+    git: repo=https://github.com/robbyrussell/oh-my-zsh.git dest=/home/{{ name }}/.oh-my-zsh
+
+  - name: Create a new Zsh config file
+    command: cp /home/{{ name }}/.oh-my-zsh/templates/zshrc.zsh-template /home/{{ name }}/.zshrc
